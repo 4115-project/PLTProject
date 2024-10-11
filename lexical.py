@@ -13,7 +13,7 @@ token_spec= [
     ('EQUAL', r'\='),
     ('COMPARE', r'\=='),
     ('IDENTIFIER', r'\[a-zA-Z_][a-zA-Z_0-9]*'),
-    ('DECIMAL', r'\d+\.\d+'),
+    ('DECIMAL', r'\d+\.\d+')
 ]
 
 valid_operators = [
