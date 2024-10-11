@@ -19,7 +19,7 @@ Even though we expect users input valid equation, we still provide error descrip
 Now You are able to input strings to testify. 
 
 The tokens we define:
-    ('INTEGER', '[0-9]*'),
+    ('INTEGER', ' [0-9]* '),
     ('PLUS', '+'),
     ('MINUS', '-'),
     ('MULTIPLY', '*'),
@@ -32,10 +32,12 @@ The tokens we define:
     ('EQUAL', '='),
     ('COMPARE', '=='),
     ('IDENTIFIER', '[a-zA-Z_][a-zA-Z_0-9]*'),
-    ('DECIMAL', '[0-9]*.[0-9]*').
+    ('DECIMAL', ' [0-9]* . [0-9]* ').
 
 Five strings example:
+
 1. 
+
 4*x^3 +2.3y^2 -45=hello
 
 ('INTEGER', '4')
