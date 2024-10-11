@@ -1,42 +1,47 @@
 # PLT Project (Multilinear Polynomial Calculator)
 
 ## Description
-This is the Github Repository of COMS 4115 PLT Project, generating a Multilinear Polynomial Calculator. 
-For the details of the project, please refer to [Proposal](https://github.com/4115-project/PLTProject/blob/main/assignments/proposal.pdf). <br />
-README is changing according to the stage of the project. Current stage is Lexical analysis.
+This repository contains the code for the COMS 4115 PLT Project, which implements a Multilinear Polynomial Calculator. For comprehensive details about the project, please refer to the [Project Proposal](https://github.com/4115-project/PLTProject/blob/main/assignments/proposal.pdf).
 
-## Environment and details
-The project is using python to generate the calculator. To run shell script please use Linux/unix operating system. <br />
-I am using Git bash to test. You can also use Ubuntu or any related system to run bash. <br />
-Go to the root directory of the project, run ./lexer:
+#### Current Stage: Lexical Analysis
+The README will be updated to reflect the project's progress as it evolves.
+
+## Environment
+This project is developed using Python. Run the associated shell scripts on a Linux/Unix operating system.
+
+### Testing Environment
+You can use Git bash to test or use Ubuntu and any compatible Linux system to run bash. <br />
+
+### How to Run
+To execute the lexer, navigate to the root directory of the project and run the following command:
 ```bash
 $ ./lexer.sh
-Enter a string for lexical analysis (type 'exit' to quit):
 ```
 
-Even though we expect users to input valid equations, we still provide error descriptions if users input invalid symbols or operations. We also check if parentheses are used correctly.
+## Lexical grammar
+While we anticipate that users will provide valid equations, the calculator includes error handling for invalid symbols or operations. It also checks for correct use of parentheses.
+#### Below are the defined tokens along with their corresponding rules:
+1. INTEGER: ```[0-9]*```
+2. DECIMAL: ```[0-9]*.[0-9]*```
+3. IDENTIFIER: ```[a-zA-Z][a-zA-Z0-9]*```
+4. OPERATOR: ``` + | - | * | / | ^ | & | = | ==```
+   - PLUS: ```+```
+   - MINUS: ```-```
+   - MULTIPLY: ```*```
+   - DIVIDE: ```/```
+   - POWER: ```^```
+   - MODULE: ```%```
+   - EQUAL: ```=```
+   - COMPARE: ```==```
+5. LPAREN: ```(```
+6. RPAREN: ```)```
+7. WHITESPACE: ``` ```
 
-### Lexical grammar
-Here are the tokens we defined and their corresponding rules:
-1. ('INTEGER', ' [0-9]* ')
-2. ('PLUS', '+')
-3. ('MINUS', '-')
-4. ('MULTIPLY', '*')
-5. ('DIVIDE', '/')
-6. ('LPAREN', '(')
-7. ('RPAREN', ')')
-8. ('Whitespace', ' ')
-9. ('POWER', '^')
-10. ('MODULE', '%')
-11. ('EQUAL', '=')
-12. ('COMPARE', '==')
-13. ('IDENTIFIER', '[a-zA-Z_][a-zA-Z_0-9]*')
-14. ('DECIMAL', ' [0-9]* . [0-9]* ')
+## Sample Input Strings:
 
-
-### Sample input strings:
-
-1. ```4*x^3 +2.3y^2 -45=hello```
+#### Example 1
+Input: ```4*x^3 +2.3y^2 -45=hello``` <br />
+Output: 
 ```
 ('INTEGER', '4')
 ('MULTIPLY', '*')
@@ -54,7 +59,9 @@ Here are the tokens we defined and their corresponding rules:
 ('IDENTIFIER', 'hello')
 ```
 
-2. ```34x*26y + (hello +1 ) ^1=6 if*2```
+#### Example 2
+Input: ```34x*26y + (hello +1 ) ^1=6 if*2``` <br />
+Output: 
 ```
 ('INTEGER', '34')
 ('IDENTIFIER', 'x')
@@ -76,14 +83,17 @@ Here are the tokens we defined and their corresponding rules:
 ('INTEGER', '2')
 ```
 
-3. ```(x+1=4```
-   
+#### Example 3
+Input: ```(x+1=4``` <br />
+Output: 
 ```Error: Unbalanced parenthesis```
 
-4.  ```3x^2 + $ =1```
-
+#### Example 4
+Input: ```3x^2 + $ =1``` <br />
+Output: 
 ```Error: '$' is not recognizable.```
 
-5. ```3++3x^2%y-1=0```
-
+#### Example 5
+Input: ```3++3x^2%y-1=0``` <br />
+Output: 
 ```Error: '++' is not a valid operator```
