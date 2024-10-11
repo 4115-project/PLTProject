@@ -3,6 +3,8 @@
 ## Description
 This repository contains the code for the COMS 4115 PLT Project, which implements a Multilinear Polynomial Calculator. For comprehensive details about the project, please refer to the [Project Proposal](https://github.com/4115-project/PLTProject/blob/main/assignments/proposal.pdf).
 
+#### Team members: Caiwu Chen(cc4786), Khaliun Gerel(kg3159)
+
 #### Current Stage: Lexical Analysis
 The README will be updated to reflect the project's progress as it evolves.
 
