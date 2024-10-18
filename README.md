@@ -26,7 +26,7 @@ While we anticipate that users will provide valid equations, the calculator incl
 1. INTEGER: ```[0-9]*```
 2. DECIMAL: ```[0-9]*.[0-9]*```
 3. IDENTIFIER: ```[a-zA-Z][a-zA-Z0-9]*```
-4. OPERATOR: ``` + | - | * | / | ^ | & | = | ==```
+4. OPERATOR: ``` + | - | * | / | ^ | % | = | ==```
    - PLUS: ```+```
    - MINUS: ```-```
    - MULTIPLY: ```*```
