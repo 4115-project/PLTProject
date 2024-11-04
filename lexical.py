@@ -1,28 +1,6 @@
 import sys
 import json
-
-token_spec= [ 
-    ('INTEGER', r'\d+'),
-    ('PLUS', r'\+'),
-    ('MINUS', r'\-'),
-    ('MULTIPLY', r'\*'),
-    ('DIVIDE', r'/'),
-    ('LPAREN', r'\('),
-    ('RPAREN', r'\)'),
-    ('Whitespace', r'\s+'),
-    ('POWER', r'\^'),
-    ('MODULE', r'\%'),
-    ('EQUAL', r'\='),
-    ('COMPARE', r'\=='),
-    ('IDENTIFIER', r'\[a-zA-Z_][a-zA-Z_0-9]*'),
-    ('DECIMAL', r'\d+\.\d+')
-]
-
-valid_operators = [
-    'PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE', 
-    'POWER', 'MODULE', 'EQUAL', 'COMPARE'
-]
-
+from constants import valid_operators, Tokens
 
 class lexical:
     def __init__(self, input_string):
@@ -43,209 +21,131 @@ class lexical:
         else:
             return True
 
+    def tokenAdvance(self, token): 
+        if self.curtoken and self.pre:
+            self.tokens.append((self.curtoken,self.pre))
+        self.curtoken=token
+        self.pre=self.string[self.position]
+
     def run(self):
         while self.advance():
+            # Whitespace
             if self.string[self.position].isspace():
                 if self.curtoken and self.pre:
                     self.tokens.append((self.curtoken,self.pre))
                 self.curtoken=None
                 self.pre=None
+            # number
             elif self.string[self.position].isdigit():
-                if self.curtoken=='IDENTIFIER':
+                if self.curtoken==Tokens.IDENTIFIER.value:
                     self.pre+=self.string[self.position]
-                elif self.curtoken=='INTEGER' or self.curtoken=='DECIMAL':
+                elif self.curtoken==Tokens.INTEGER.value or self.curtoken==Tokens.DECIMAL.value:
                     self.pre+=self.string[self.position]
                 else:
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='INTEGER'
-                    self.pre=self.string[self.position]
+                    self.tokenAdvance(Tokens.INTEGER.value)
+            # letter
             elif self.string[self.position].isalpha():
-                if self.curtoken=='IDENTIFIER':
+                if self.curtoken==Tokens.IDENTIFIER.value:
                     self.pre+=self.string[self.position]
                 else:
                     if self.curtoken and self.pre:
                         if self.curtoken in valid_operators:
                             self.tokens.append((self.curtoken,self.pre))
                         else:
-                            self.error_msg=f"'after {self.pre} should have an operator"
+                            self.error_msg=f"{self.string[self.position]} is not an operator"
                             self.error=True
                             break
-                    self.curtoken='IDENTIFIER'
+                    self.curtoken=Tokens.IDENTIFIER.value
                     self.pre=self.string[self.position]
+            # Dot [.]
             elif self.string[self.position]== '.':
-                if self.curtoken=='INTEGER':
-                    self.curtoken='DECIMAL'
+                if self.curtoken==Tokens.INTEGER.value:
+                    self.curtoken=Tokens.DECIMAL.value
                     self.pre+=self.string[self.position]
                 else:
                     self.error_msg=f"'{self.pre}{self.string[self.position]}' is not a valid presentation"
                     self.error=True
                     break
-
-            #operator consideration:
+            # Operator considerations:
+            # Plus [+]
             elif self.string[self.position]=='+':
-                if self.curtoken=='IDENTIFIER':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='PLUS'
-                    self.pre=self.string[self.position]
-                elif self.curtoken=='INTEGER' or self.curtoken=='DECIMAL':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='PLUS'
-                    self.pre=self.string[self.position]
-                elif self.curtoken in valid_operators:
+                if self.curtoken in valid_operators:
                     self.error_msg=f"'{self.pre}{self.string[self.position]}' is not a valid operator"
                     self.error=True
                     break
                 else:
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='PLUS'
-                    self.pre=self.string[self.position]
+                    self.tokenAdvance(Tokens.PLUS.value)
+            # Minus [-]
             elif self.string[self.position]=='-':
-                if self.curtoken=='IDENTIFIER':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='MINUS'
-                    self.pre=self.string[self.position]
-                elif self.curtoken=='INTEGER' or self.curtoken=='DECIMAL':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='MINUS'
-                    self.pre=self.string[self.position]
-                elif self.curtoken in valid_operators:
+                if self.curtoken in valid_operators:
                     self.error_msg=f"'{self.pre}{self.string[self.position]}' is not a valid operator"
                     self.error=True
                     break
                 else:
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='MINUS'
-                    self.pre=self.string[self.position]
+                    self.tokenAdvance(Tokens.MINUS.value)
+            # Multiply [*]
             elif self.string[self.position]=='*':
-                if self.curtoken=='IDENTIFIER':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='MULTIPLY'
-                    self.pre=self.string[self.position]
-                elif self.curtoken=='INTEGER' or self.curtoken=='DECIMAL':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='MULTIPLY'
-                    self.pre=self.string[self.position]
-                elif self.curtoken in valid_operators:
+                if self.curtoken in valid_operators:
                     self.error_msg=f"'{self.pre}{self.string[self.position]}' is not a valid operator"
                     self.error=True
                     break
                 else:
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='MULTIPLY'
-                    self.pre=self.string[self.position]
-
+                    self.tokenAdvance(Tokens.MULTIPLY.value)
+            # Power [^]
             elif self.string[self.position]=='^':
-                if self.curtoken=='IDENTIFIER':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='POWER'
-                    self.pre=self.string[self.position]
-                elif self.curtoken=='INTEGER' or self.curtoken=='DECIMAL':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='POWER'
-                    self.pre=self.string[self.position]
-                elif self.curtoken in valid_operators:
+                if self.curtoken in valid_operators:
                     self.error_msg=f"'{self.pre}{self.string[self.position]}' is not a valid operator"
                     self.error=True
                     break
                 else:
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='POWER'
-                    self.pre=self.string[self.position]
-
+                    self.tokenAdvance(Tokens.POWER.value)
+            # Equal [=]
             elif self.string[self.position]=='=':
-                if self.curtoken=='IDENTIFIER':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='EQUAL'
-                    self.pre=self.string[self.position]
-                elif self.curtoken=='INTEGER' or self.curtoken=='DECIMAL':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='EQUAL'
-                    self.pre=self.string[self.position]
-                elif self.curtoken=='EQUAL':
-                    self.curtoken='COMPARE'
+                if self.curtoken==Tokens.EQUAL.value:
+                    self.curtoken=Tokens.COMPARE.value
                     self.pre+=self.string[self.position]
                 elif self.curtoken in valid_operators:
                     self.error_msg=f"'{self.pre}{self.string[self.position]}' is not a valid operator"
                     self.error=True
                     break
                 else:
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='EQUAL'
-                    self.pre=self.string[self.position]
+                    self.tokenAdvance(Tokens.EQUAL.value)
+            # Divide [/]
             elif self.string[self.position]=='/':
-                if self.curtoken=='IDENTIFIER':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='DIVIDE'
-                    self.pre=self.string[self.position]
-                elif self.curtoken=='INTEGER' or self.curtoken=='DECIMAL':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='DIVIDE'
-                    self.pre=self.string[self.position]
-                elif self.curtoken in valid_operators:
+                if self.curtoken in valid_operators:
                     self.error_msg=f"'{self.pre}{self.string[self.position]}' is not a valid operator"
                     self.error=True
                     break
                 else:
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='DIVIDE'
-                    self.pre=self.string[self.position]
+                    self.tokenAdvance(Tokens.DIVIDE.value)
+            # Module [%]
+            elif self.string[self.position]=='%':
+                if self.curtoken in valid_operators:
+                    self.error_msg=f"'{self.pre}{self.string[self.position]}' is not a valid operator"
+                    self.error=True
+                    break
+                else:
+                    self.tokenAdvance(Tokens.MODULE.value)
+            # LPAREN [(]
             elif self.string[self.position]=='(':
                 if self.curtoken and self.pre:
                     self.tokens.append((self.curtoken,self.pre))
-                self.tokens.append(('LPAREN','('))
+                self.tokens.append((Tokens.LPAREN.value,'('))
                 self.checkparen+=1
                 self.curtoken=None
                 self.pre=None
+            # LPAREN [)]
             elif self.string[self.position]==')':
                 if self.curtoken and self.pre:
                     self.tokens.append((self.curtoken,self.pre))
-                self.tokens.append(('RPAREN',')'))
+                self.tokens.append((Tokens.RPAREN.value,')'))
                 self.checkparen-=1
                 if self.checkparen<0:
                     self.error=True
-                    self.error_msg="See right parenthesis before left."
+                    self.error_msg="There is a right parenthesis before left parenthesis."
                     break
                 self.curtoken=None
                 self.pre=None
-            elif self.string[self.position]=='%':
-                if self.curtoken=='IDENTIFIER':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='MODULE'
-                    self.pre=self.string[self.position]
-                elif self.curtoken=='INTEGER' or self.curtoken=='DECIMAL':
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='MODULE'
-                    self.pre=self.string[self.position]
-                elif self.curtoken in valid_operators:
-                    self.error_msg=f"'{self.pre}{self.string[self.position]}' is not a valid operator"
-                    self.error=True
-                    break
-                else:
-                    if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
-                    self.curtoken='MODULE'
-                    self.pre=self.string[self.position]
             else:
                 self.error_msg=f"'{self.string[self.position]}' is not recognizable."
                 self.error=True
@@ -276,8 +176,4 @@ if __name__ == "__main__":
     dfa.run()
     tokens = dfa.get_tokens()
     
-    if not dfa.error:
-        # Output tokens as JSON list
-        print(json.dumps(tokens))
-    else:
-        print(json.dumps(dfa.get_tokens()))
+    print(json.dumps(tokens))
