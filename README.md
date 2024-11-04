@@ -3,6 +3,28 @@
 ## Description
 This repository contains the code for the COMS 4115 PLT Project, which implements a Multilinear Polynomial Calculator. For comprehensive details about the project, please refer to the [Project Proposal](https://github.com/4115-project/PLTProject/blob/main/assignments/proposal.pdf).
 
+
+
+```bash
+Expression -> Term = Term
+Term -> Term + Term | Term - Term | (Term) | - Term | +Term | subterm
+subterm ->  subterm + subterm | subterm - subterm |  subterm * subterm | subterm % subterm | subterm subterm | subterm ^ subterm | subterm / subterm | (subterm) | val
+Val -> Int | ID | Decimal
+
+
+
+
+
+Expression -> Term = Term
+Term       -> subterm Term'
+Term'      -> + subterm Term' | - subterm Term' | ε
+subterm    -> factor subterm'
+subterm'   -> + factor subterm' | - factor subterm' | * factor subterm' | / factor subterm' 
+            | % factor subterm' | ^ factor subterm' | ε
+factor     -> ( Term ) | - factor | + factor | val
+val        -> Int | ID | Decimal
+
+```
 #### Team members: Caiwu Chen(cc4786), Khaliun Gerel(kg3159)
 
 #### Current Stage: Lexical Analysis

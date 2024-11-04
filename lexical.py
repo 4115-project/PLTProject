@@ -1,4 +1,6 @@
 import sys
+import json
+
 token_spec= [ 
     ('INTEGER', r'\d+'),
     ('PLUS', r'\+'),
@@ -63,7 +65,12 @@ class lexical:
                     self.pre+=self.string[self.position]
                 else:
                     if self.curtoken and self.pre:
-                        self.tokens.append((self.curtoken,self.pre))
+                        if self.curtoken in valid_operators:
+                            self.tokens.append((self.curtoken,self.pre))
+                        else:
+                            self.error_msg=f"'after {self.pre} should have an operator"
+                            self.error=True
+                            break
                     self.curtoken='IDENTIFIER'
                     self.pre=self.string[self.position]
             elif self.string[self.position]== '.':
@@ -259,19 +266,18 @@ class lexical:
             return "Error: " + self.error_msg
 
 
-
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        input_string = ' '.join(sys.argv[1:]) 
+        input_string = ' '.join(sys.argv[1:])
     else:
         input_string = input("Enter a string for lexical analysis: ")
-    dfa=lexical(input_string)
-    dfa.run()
-    tokens=dfa.get_tokens()
-    if dfa.error==False:
-        for i in tokens:
-            print(i)
-    else:
-        print(dfa.get_tokens())
-            
 
+    dfa = lexical(input_string)
+    dfa.run()
+    tokens = dfa.get_tokens()
+    
+    if not dfa.error:
+        # Output tokens as JSON list
+        print(json.dumps(tokens))
+    else:
+        print(json.dumps(dfa.get_tokens()))
