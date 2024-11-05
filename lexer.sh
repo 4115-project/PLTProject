@@ -14,9 +14,10 @@ while true; do
     tokens=$(python3 lexical.py "$input_string")
     
     # Pass tokens to AST.py if no error
-    if [[ "$tokens" != Error:* ]]; then
-        python3 AST.py "$tokens"
-    else
+    if [[ "$tokens" =~ Error:* ]]; then
         echo "$tokens"
+    else
+        echo "Tokens: $tokens"
+        python3 AST.py "$tokens"
     fi
 done

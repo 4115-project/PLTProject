@@ -1,6 +1,7 @@
 import re
 import sys
 import json
+from constants import valid_operators, Tokens
 
 # Class representing a node in the Abstract Syntax Tree
 class ASTNode:
@@ -47,17 +48,17 @@ class Parser:
     def parse_expression(self):
         left = self.parse_term()
         token = self.get_current_token()
-        if token and token[0] == 'EQUAL':
+        if token and token[0] == Tokens.EQUAL.value:
             self.consume()  
             right = self.parse_expression()  
-            return ASTNode('EQUAL', children=[left, right])
+            return ASTNode(Tokens.EQUAL.value, children=[left, right])
         return left  
 
     def parse_term(self):
         left = self.parse_subterm()
         while True:
             token = self.get_current_token()
-            if token and token[0] in ('PLUS', 'MINUS'):
+            if token and token[0] in (Tokens.PLUS.value, Tokens.MINUS.value):
                 self.consume()
                 right = self.parse_subterm()
                 left = ASTNode(token[0], children=[left, right])
@@ -69,7 +70,7 @@ class Parser:
         left = self.parse_exponent()
         while True:
             token = self.get_current_token()
-            if token and token[0] in ('MULTIPLY', 'DIV', 'MOD'):
+            if token and token[0] in (Tokens.MULTIPLY.value, Tokens.DIVIDE.value, Tokens.MODULE.value):
                 self.consume()
                 right = self.parse_exponent()
                 left = ASTNode(token[0], children=[left, right])
@@ -81,10 +82,10 @@ class Parser:
         left = self.parse_factor()
         while True:
             token = self.get_current_token()
-            if token and token[0] == 'POWER':
+            if token and token[0] == Tokens.POWER.value:
                 self.consume()
                 right = self.parse_factor()
-                left = ASTNode('POWER', children=[left, right])
+                left = ASTNode(Tokens.POWER.value, children=[left, right])
             else:
                 break
         return left
@@ -92,46 +93,24 @@ class Parser:
     def parse_factor(self):
         token = self.get_current_token()
         
-        if token and token[0] == 'LPAREN':
+        if token and token[0] == Tokens.LPAREN.value:
             self.consume()
             expr = self.parse_expression()
-            if not self.match('RPAREN'):
+            if not self.match(Tokens.RPAREN.value):
                 raise SyntaxError("Expected ')'")
             return expr
 
-        elif token and token[0] in ('MINUS', 'PLUS'):
+        elif token and token[0] in (Tokens.MINUS.value, Tokens.PLUS.value):
             self.consume()
             return ASTNode(token[0], children=[self.parse_factor()])
 
-        elif token and token[0] in ('INTEGER', 'IDENTIFIER', 'DECIMAL'):
+        elif token and token[0] in (Tokens.INTEGER.value, Tokens.DECIMAL.value, Tokens.IDENTIFIER.value):
             self.consume()
             return ASTNode('VAL', value=token[1])
 
         raise SyntaxError("Unexpected token: " + str(token))
 
 if __name__ == "__main__":
-    test_tokens = [
-    ('INTEGER', '34'),
-    ('MULTIPLY', '*'),
-('IDENTIFIER', 'x'),
-('MULTIPLY', '*'),
-('INTEGER', '26'),
-('MULTIPLY', '*'),
-('IDENTIFIER', 'y'),
-('PLUS', '+'),
-('LPAREN', '('),
-('IDENTIFIER', 'hello'),
-('PLUS', '+'),
-('INTEGER', '1'),
-('RPAREN', ')'),
-('POWER', '^'),
-('INTEGER', '1'),
-('EQUAL', '='),
-('INTEGER', '6'),
-('IDENTIFIER', 'if'),
-('MULTIPLY', '*'),
-('INTEGER', '2'),
-]
     if len(sys.argv) > 1:
         token_string = sys.argv[1]
         
@@ -140,8 +119,8 @@ if __name__ == "__main__":
             tokens = json.loads(token_string)
             if not isinstance(tokens, list):
                 raise ValueError("Tokens must be in a list format.")
-            if sum(1 for token in tokens if token[0] == 'EQUAL') != 1:
-                raise ValueError("Not a Multilinear Polynomial Equation.")
+            if sum(1 for token in tokens if token[0] == Tokens.EQUAL.value) != 1:
+                raise ValueError("Not an equation.")
 
         except (json.JSONDecodeError, ValueError) as e:
             print(f"Error parsing tokens: {e}")
