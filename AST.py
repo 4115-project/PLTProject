@@ -120,7 +120,7 @@ if __name__ == "__main__":
             if not isinstance(tokens, list):
                 raise ValueError("Tokens must be in a list format.")
             if sum(1 for token in tokens if token[0] == Tokens.EQUAL.value) != 1:
-                raise ValueError("Not a Multilinear Polynomial Equation.")
+                raise ValueError("Not an equation.")
 
         except (json.JSONDecodeError, ValueError) as e:
             print(f"Error parsing tokens: {e}")
