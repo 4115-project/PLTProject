@@ -3,32 +3,39 @@
 ## Description
 This repository contains the code for the COMS 4115 PLT Project, which implements a Multilinear Polynomial Calculator. For comprehensive details about the project, please refer to the [Project Proposal](https://github.com/4115-project/PLTProject/blob/main/assignments/proposal.pdf).
 
+#### Team members: Caiwu Chen(cc4786), Khaliun Gerel(kg3159)
 
+#### Current Stage: Parser
+The README will be updated to reflect the project's progress as it evolves.
+
+#### Demo video:
+
+## Context-Free Grammar
+```bash
+Expression -> Term = Term
+Term       -> Term + Term | Term - Term | (Term) | - Term | + Term | subterm
+Subterm    -> Subterm + Subterm | Subterm - Subterm |  Subterm * Subterm | Subterm % Subterm
+            | Subterm ^ Subterm | Subterm / Subterm | (Subterm) | Val
+Val        -> int | id | decimal
+
+```
 
 ```bash
 Expression -> Term = Term
-Term -> Term + Term | Term - Term | (Term) | - Term | +Term | subterm
-subterm ->  subterm + subterm | subterm - subterm |  subterm * subterm | subterm % subterm | subterm subterm | subterm ^ subterm | subterm / subterm | (subterm) | val
-Val -> Int | ID | Decimal
-
-
-
-
-
-Expression -> Term = Term
-Term       -> subterm Term'
-Term'      -> + subterm Term' | - subterm Term' | ε
-subterm    -> factor subterm'
-subterm'   -> + factor subterm' | - factor subterm' | * factor subterm' | / factor subterm' 
-            | % factor subterm' | ^ factor subterm' | ε
-factor     -> ( Term ) | - factor | + factor | val
-val        -> Int | ID | Decimal
+Term       -> Subterm Term'
+Term'      -> + Subterm Term' | - Subterm Term' | ε
+Subterm    -> Factor Subterm'
+Subterm'   -> + Factor Subterm' | - Factor Subterm' | * Factor Subterm' | / Factor Subterm' 
+            | % Factor Subterm' | ^ Factor Subterm' | ε
+Factor     -> ( Term ) | - Factor | + Factor | Val
+Val        -> int | id | decimal
 
 ```
-#### Team members: Caiwu Chen(cc4786), Khaliun Gerel(kg3159)
 
-#### Current Stage: Lexical Analysis
-The README will be updated to reflect the project's progress as it evolves.
+```bash
+Terminals: =, +, -, *, /, %, ^, (, ), int, id, decimal
+Non-terminals: Expression, Term, Term', Subterm, Subterm', Factor, Val
+```
 
 ## Environment
 This project is developed using Python. Run the associated shell scripts on a Linux/Unix operating system.
@@ -48,7 +55,7 @@ While we anticipate that users will provide valid equations, the calculator incl
 1. INTEGER: ```[0-9]*```
 2. DECIMAL: ```[0-9]*.[0-9]*```
 3. IDENTIFIER: ```[a-zA-Z][a-zA-Z0-9]*```
-4. OPERATOR: ``` + | - | * | / | ^ | % | = | ==```
+4. OPERATORS: ``` + | - | * | / | ^ | % | = | ==```
    - PLUS: ```+```
    - MINUS: ```-```
    - MULTIPLY: ```*```
@@ -64,7 +71,7 @@ While we anticipate that users will provide valid equations, the calculator incl
 ## Sample Input Strings:
 
 #### Example 1
-Input: ```4*x^3 +2.3y^2 -45=hello``` <br />
+Input: ```4*x^3 +2.3*y^2 -45=hello``` <br />
 Output: 
 ```
 ('INTEGER', '4')
@@ -74,6 +81,7 @@ Output:
 ('INTEGER', '3')
 ('PLUS', '+')
 ('DECIMAL', '2.3')
+('MULTIPLY', '*')
 ('IDENTIFIER', 'y')
 ('POWER', '^')
 ('INTEGER', '2')
@@ -82,16 +90,19 @@ Output:
 ('EQUAL', '=')
 ('IDENTIFIER', 'hello')
 ```
-
 #### Example 2
-Input: ```34x*26y + (hello +1 ) ^1=6 if*2``` <br />
+Input: ```34^(x*26%y) + (hello +1 ) ^1=6+if*2``` <br />
 Output: 
 ```
 ('INTEGER', '34')
+('POWER', '^')
+('LPAREN', '(')
 ('IDENTIFIER', 'x')
 ('MULTIPLY', '*')
 ('INTEGER', '26')
+('MODULE', '%')
 ('IDENTIFIER', 'y')
+('RPAREN', ')')
 ('PLUS', '+')
 ('LPAREN', '(')
 ('IDENTIFIER', 'hello')
@@ -102,22 +113,108 @@ Output:
 ('INTEGER', '1')
 ('EQUAL', '=')
 ('INTEGER', '6')
+('PLUS', '+')
 ('IDENTIFIER', 'if')
 ('MULTIPLY', '*')
 ('INTEGER', '2')
 ```
-
-#### Example 3
+#### Example 3 
 Input: ```(x+1=4``` <br />
 Output: 
 ```Error: Unbalanced parenthesis```
-
-#### Example 4
-Input: ```3x^2 + $ =1``` <br />
+#### Example 4 
+Input: ```3^2 + $ =1``` <br />
 Output: 
 ```Error: '$' is not recognizable.```
-
-#### Example 5
+#### Example 5 
 Input: ```3++3x^2%y-1=0``` <br />
 Output: 
 ```Error: '++' is not a valid operator```
+
+## Sample Input Programs (AST):
+
+#### Example 1
+Input: ```4*x^3 +2.3*y^2 -45=hello``` <br />
+AST: 
+```
+EQUAL
+├── MINUS
+    ├── PLUS
+        ├── MULTIPLY
+            ├── VAL (4)
+            └── POWER
+                ├── VAL (x)
+                └── VAL (3)
+        └── MULTIPLY
+            ├── VAL (2.3)
+            └── POWER
+                ├── VAL (y)
+                └── VAL (2)
+    └── VAL (45)
+└── VAL (hello)
+```
+#### Example 2
+Input: ```34^(x*26%y) + (hello +1 ) ^1=6+if*2``` <br />
+AST:
+```
+EQUAL
+├── PLUS
+    ├── POWER
+        ├── VAL (34)
+        └── MODULE
+            ├── MULTIPLY
+                ├── VAL (x)
+                └── VAL (26)
+            └── VAL (y)
+    └── POWER
+        ├── PLUS
+            ├── VAL (hello)
+            └── VAL (1)
+        └── VAL (1)
+└── PLUS
+    ├── VAL (6)
+    └── MULTIPLY
+        ├── VAL (if)
+        └── VAL (2)
+```
+#### Example 3
+Input: ```x+10^2.2``` <br />
+AST: 
+```
+Error parsing tokens: Not an equation.
+```
+### Example 4
+Input: ```2*10=y-1^3``` <br />
+AST:
+```
+EQUAL
+├── MULTIPLY
+    ├── VAL (2)
+    └── VAL (10)
+└── MINUS
+    ├── VAL (y)
+    └── POWER
+        ├── VAL (1)
+        └── VAL (3)
+```
+
+### Example 5
+Input: ```(2+3)*(4+x)=(10*(4%y)+8)``` <br />
+AST:
+```
+EQUAL
+├── MULTIPLY
+    ├── PLUS
+        ├── VAL (2)
+        └── VAL (3)
+    └── PLUS
+        ├── VAL (4)
+        └── VAL (x)
+└── PLUS
+    ├── MULTIPLY
+        ├── VAL (10)
+        └── MODULE
+            ├── VAL (4)
+            └── VAL (y)
+    └── VAL (8)
+```
