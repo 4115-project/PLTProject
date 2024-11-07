@@ -108,7 +108,7 @@ class Parser:
             self.consume()
             return ASTNode('VAL', value=token[1])
 
-        raise SyntaxError("Unexpected token: " + str(token))
+        raise SyntaxError("Unexpected token: " + str(token[1]))
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

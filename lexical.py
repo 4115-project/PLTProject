@@ -155,9 +155,9 @@ class lexical:
             self.tokens.append((self.curtoken,self.pre))
             self.curtoken=None
             self.pre=None
-        if self.checkparen!=0 and self.error==False:
-            self.error_msg="Unbalanced parenthesis"
-            self.error=True
+        # if self.checkparen!=0 and self.error==False:
+        #     self.error_msg="Unbalanced parenthesis"
+        #     self.error=True
 
     def get_tokens(self):
         if not self.error:
