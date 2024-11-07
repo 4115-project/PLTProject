@@ -8,18 +8,19 @@ This repository contains the code for the COMS 4115 PLT Project, which implement
 #### Current Stage: Parser
 The README will be updated to reflect the project's progress as it evolves.
 
-#### Demo video:
+#### Demo video: https://vimeo.com/1027472571
 
 ## Context-Free Grammar
+### Grammar with Ambiguity
 ```bash
 Expression -> Term = Term
-Term       -> Term + Term | Term - Term | (Term) | - Term | + Term | subterm
+Term       -> Term + Term | Term - Term | (Term) | - Term | + Term | Subterm
 Subterm    -> Subterm + Subterm | Subterm - Subterm |  Subterm * Subterm | Subterm % Subterm
             | Subterm ^ Subterm | Subterm / Subterm | (Subterm) | Val
 Val        -> int | id | decimal
 
 ```
-
+### Left-Factored Grammar (Eliminated Left Recursion and Ambiguity)
 ```bash
 Expression -> Term = Term
 Term       -> Subterm Term'
@@ -31,7 +32,7 @@ Factor     -> ( Term ) | - Factor | + Factor | Val
 Val        -> int | id | decimal
 
 ```
-
+### Terminals and non-terminals
 ```bash
 Terminals: =, +, -, *, /, %, ^, (, ), int, id, decimal
 Non-terminals: Expression, Term, Term', Subterm, Subterm', Factor, Val
@@ -121,7 +122,14 @@ Output:
 #### Example 3 
 Input: ```(x+1=4``` <br />
 Output: 
-```Error: Unbalanced parenthesis```
+```
+('LPAREN', '(')
+('IDENTIFIER', 'x')
+('PLUS', '+')
+('INTEGER', '1')
+('EQUAL', '=')
+('INTEGER', '4')
+```
 #### Example 4 
 Input: ```3^2 + $ =1``` <br />
 Output: 
@@ -217,4 +225,11 @@ EQUAL
             ├── VAL (4)
             └── VAL (y)
     └── VAL (8)
+```
+
+### Example 6
+Input: ```(x+y+z^(x+1)=1``` <br />
+AST: 
+```
+SyntaxError: Expected ')'
 ```
