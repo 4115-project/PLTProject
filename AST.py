@@ -3,6 +3,7 @@ import sys
 import json
 from constants import valid_operators, Tokens
 
+sys.stdout.reconfigure(encoding='utf-8')
 # Class representing a node in the Abstract Syntax Tree
 class ASTNode:
     def __init__(self, type, value=None, children=None):
@@ -10,17 +11,17 @@ class ASTNode:
         self.value = value
         self.children = children if children else []
 
-
     def __repr__(self, level=0, is_last=False):
-        prefix = "    " * (level - 1) + ("└── " if is_last else "├── " if level > 0 else "")
+        prefix = "    " * (level - 1) + ("|-- " if not is_last else "`-- " if level > 0 else "")
         ret = f"{prefix}{self.type}"
-        if self.value:
+        if self.value is not None:
             ret += f" ({self.value})"
         ret += "\n"
-        
+
         for i, child in enumerate(self.children):
             ret += child.__repr__(level + 1, is_last=(i == len(self.children) - 1))
         return ret
+
 
 
 class Parser:
@@ -34,8 +35,7 @@ class Parser:
         return None
 
     def consume(self):
-        #if self.current_token_index < len(self.tokens):
-        #    print(f"Consuming token: {self.tokens[self.current_token_index]}")
+        """Consume the current token and move to the next."""
         self.current_token_index += 1
 
     def match(self, token_type):
@@ -49,10 +49,10 @@ class Parser:
         left = self.parse_term()
         token = self.get_current_token()
         if token and token[0] == Tokens.EQUAL.value:
-            self.consume()  
-            right = self.parse_expression()  
+            self.consume()
+            right = self.parse_expression()
             return ASTNode(Tokens.EQUAL.value, children=[left, right])
-        return left  
+        return left
 
     def parse_term(self):
         left = self.parse_subterm()
@@ -92,7 +92,6 @@ class Parser:
 
     def parse_factor(self):
         token = self.get_current_token()
-        
         if token and token[0] == Tokens.LPAREN.value:
             self.consume()
             expr = self.parse_expression()
@@ -104,16 +103,21 @@ class Parser:
             self.consume()
             return ASTNode(token[0], children=[self.parse_factor()])
 
-        elif token and token[0] in (Tokens.INTEGER.value, Tokens.DECIMAL.value, Tokens.IDENTIFIER.value):
+        elif token and token[0] in (Tokens.INTEGER.value, Tokens.DECIMAL.value):
             self.consume()
             return ASTNode('VAL', value=token[1])
+            
+        elif token and token[0] in (Tokens.IDENTIFIER.value):
+            self.consume()
+            return ASTNode('ID', value=token[1])
 
         raise SyntaxError("Unexpected token: " + str(token[1]))
 
-if __name__ == "__main__":
+
+def main():
+    """Main function for running the parser."""
     if len(sys.argv) > 1:
         token_string = sys.argv[1]
-        
         try:
             # Convert JSON string to list of tokens
             tokens = json.loads(token_string)
@@ -121,15 +125,24 @@ if __name__ == "__main__":
                 raise ValueError("Tokens must be in a list format.")
             if sum(1 for token in tokens if token[0] == Tokens.EQUAL.value) != 1:
                 raise ValueError("Not an equation.")
-
         except (json.JSONDecodeError, ValueError) as e:
             print(f"Error parsing tokens: {e}")
             sys.exit(1)
-
     else:
         print("No tokens provided. Exiting...")
         sys.exit(1)
 
     parser = Parser(tokens)
-    ast = parser.parse_expression()  
-    print(ast)  
+    try:
+        ast = parser.parse_expression()
+    
+        #print(ast)
+        print(json.dumps(ast, default=lambda o: o.__dict__))
+    except SyntaxError as e:
+        print(f"Syntax error while parsing: {e}")
+        sys.exit(1)
+
+
+
+if __name__ == "__main__":
+    main()
