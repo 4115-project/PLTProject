@@ -37,7 +37,7 @@ while true; do
     echo "Serialized AST for Solver:"
     echo "$json_output"
 
-    solver_output=$(python3 solver.py "$json_output")
+    solver_output=$(python3 code_generation.py "$json_output")
 
     if [[ "$solver_output" =~ Error:* ]]; then
         echo "$solver_output"

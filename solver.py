@@ -3,30 +3,6 @@ import cmath
 import json
 import sys
 
-def parse_ast(node):
-    node_type = node["type"]
-    children = node.get("children", [])
-    
-    if node_type == "VAL":
-        return lambda x: float(node["value"])
-    elif node_type == "ID":
-        return lambda x: x
-    elif node_type == "MULTIPLY":
-        return lambda x: parse_ast(children[0])(x) * parse_ast(children[1])(x)
-    elif node_type == "PLUS":
-        return lambda x: parse_ast(children[0])(x) + parse_ast(children[1])(x)
-    elif node_type == "MINUS":
-        return lambda x: parse_ast(children[0])(x) - parse_ast(children[1])(x)
-    elif node_type == "POWER":
-        return lambda x: parse_ast(children[0])(x) ** parse_ast(children[1])(x)
-    elif node_type == "EQUAL":
-        lhs = parse_ast(children[0])
-        rhs = parse_ast(children[1])
-        return lambda x: lhs(x) - rhs(x)
-    else:
-        raise ValueError(f"Unsupported node type: {node_type}")
-
-
 def muller_method(func, x0, x1, x2, max_iter=100, tol=1e-6):
     for iteration in range(max_iter):
         f0, f1, f2 = func(x0), func(x1), func(x2)
@@ -54,7 +30,6 @@ def muller_method(func, x0, x1, x2, max_iter=100, tol=1e-6):
 
     raise ValueError("Muller's method did not converge.")
 
-
 def deflate_polynomial(func, root, tol=1e-6):
     def new_func(x):
         value = func(x)
@@ -64,38 +39,29 @@ def deflate_polynomial(func, root, tol=1e-6):
         return value / correction
     return new_func
 
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
+def solve_equation(python_expression):
+    def f(x):
+        return eval(python_expression)
+
+    all_roots = []
+    guesses = [0, 1, -1] 
+    max_degree = 10  
+
+    while len(all_roots) < max_degree:
         try:
-            ast = json.loads(sys.argv[1])
-            equation = parse_ast(ast)
-            f = equation
-            all_roots = []
-            guesses = [0, 1, -1]  
-            max_degree = 10  
-
-            while len(all_roots) < max_degree:
-                try:
-                    root = muller_method(f, *guesses)
-                    if all(abs(root - r) > 1e-6 for r in all_roots):
-                        all_roots.append(root)
-                        f = deflate_polynomial(f, root)
-                    else:
-                        break
-                except Exception as e:
-                    print(f"Stopping root finding: {e}")
-                    break
-
-            real_roots = sorted([r.real for r in all_roots if abs(r.imag) < 1e-6])
-            complex_roots = sorted(
-                [r for r in all_roots if abs(r.imag) >= 1e-6], key=lambda z: (z.real, z.imag)
-            )
-
-            print("Solutions:")
-            print(f"Real Roots: {real_roots}")
-            print(f"Complex Roots: {complex_roots}")
-
+            root = muller_method(f, *guesses)
+            if all(abs(root - r) > 1e-6 for r in all_roots):
+                all_roots.append(root)
+                f = deflate_polynomial(f, root)
+            else:
+                break
         except Exception as e:
-            print(f"Error solving equation: {e}")
-    else:
-        print("No AST provided. Exiting...")
+            print(f"Stopping root finding: {e}")
+            break
+
+    real_roots = sorted([r.real for r in all_roots if abs(r.imag) < 1e-6])
+    complex_roots = sorted(
+        [r for r in all_roots if abs(r.imag) >= 1e-6], key=lambda z: (z.real, z.imag)
+    )
+
+    return real_roots, complex_roots
