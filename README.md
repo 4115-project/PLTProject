@@ -153,40 +153,48 @@ Complex Roots: []
 ```
 
 #### Example 3
-Input: ```2*x-6=0``` <br />
+Input: ```3*x^4+2*x^2-10=0``` <br />
 Output: 
 ```
-Tokens: [["INTEGER", "2"], ["MULTIPLY", "*"], ["IDENTIFIER", "x"], ["MINUS", "-"], ["INTEGER", "6"], ["EQUAL", "="], ["INTEGER", "0"]]
+Tokens: [["INTEGER", "3"], ["MULTIPLY", "*"], ["IDENTIFIER", "x"], ["POWER", "^"], ["INTEGER", "4"], ["PLUS", "+"], ["INTEGER", "2"], ["MULTIPLY", "*"], ["IDENTIFIER", "x"], ["POWER", "^"], ["INTEGER", "2"], ["MINUS", "-"], ["INTEGER", "10"], ["EQUAL", "="], ["INTEGER", "0"]]
 
 AST Tree Representation:
 EQUAL
 ├── MINUS
-    ├── MULTIPLY
-        ├── VAL (2)
-        └── ID (x)
-    └── VAL (6)
+    ├── PLUS
+        ├── MULTIPLY
+            ├── VAL (3)
+            └── POWER
+                ├── ID (x)
+                └── VAL (4)
+        └── MULTIPLY
+            ├── VAL (2)
+            └── POWER
+                ├── ID (x)
+                └── VAL (2)
+    └── VAL (10)
 └── VAL (0)
 
 Serialized AST for Solver:
-{"type": "EQUAL", "value": null, "children": [{"type": "MINUS", "value": null, "children": [{"type": "MULTIPLY", "value": null, "children": [{"type": "VAL", "value": "2", "children": []}, {"type": "ID", "value": "x", "children": []}]}, {"type": "VAL", "value": "6", "children": []}]}, {"type": "VAL", "value": "0", "children": []}]}
+{"type": "EQUAL", "value": null, "children": [{"type": "MINUS", "value": null, "children": [{"type": "PLUS", "value": null, "children": [{"type": "MULTIPLY", "value": null, "children": [{"type": "VAL", "value": "3", "children": []}, {"type": "POWER", "value": null, "children": [{"type": "ID", "value": "x", "children": []}, {"type": "VAL", "value": "4", "children": []}]}]}, {"type": "MULTIPLY", "value": null, "children": [{"type": "VAL", "value": "2", "children": []}, {"type": "POWER", "value": null, "children": [{"type": "ID", "value": "x", "children": []}, {"type": "VAL", "value": "2", "children": []}]}]}]}, {"type": "VAL", "value": "10", "children": []}]}, {"type": "VAL", "value": "0", "children": []}]}
 
 Solver Output: Generated Python Code:
 
 from solver import solve_equation
 
 if __name__ == "__main__":
-    python_expression = "(((2 * x) - 6) - 0)"
+    python_expression = "((((3 * (x ** 4)) + (2 * (x ** 2))) - 10) - 0)"
     real_roots, complex_roots = solve_equation(python_expression)
 
     print("Solutions:")
     print(f"Real Roots: {real_roots}")
     print(f"Complex Roots: {complex_roots}")
-            
+
 Execution Output:
 Stopping root finding: Muller's method did not converge.
 Solutions:
-Real Roots: [np.float64(3.0)]
-Complex Roots: []
+Real Roots: [np.float64(-1.2339319758323726), np.float64(1.233931975819677)]
+Complex Roots: [np.complex128(-6.369171856590583e-11-1.4796130534263663j), np.complex128(-1.3788192809727207e-11+1.479613053384749j)]
 ```
 
 #### Example 4
