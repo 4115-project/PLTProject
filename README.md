@@ -66,8 +66,7 @@ While we anticipate that users will provide valid equations, the calculator incl
 
 ## Code Generation
 
-The code generation phase processes the Abstract Syntax Tree (AST) to interpret the input program and generate executable Python code. It converts high-level expressions into Python functions to solve polynomial equations using Muller's method and polynomial deflation. This phase also detects errors, such as syntax or semantic issues, and logs clear messages about where they occurred, ensuring accurate and reliable program execution.
-
+The Code Generation Phase transforms Abstract Syntax Trees (ASTs) into executable Python code. First, the input expression or AST is parsed and converted into valid Python syntax, supporting basic mathematical operations like addition, subtraction, multiplication, and more. Next, the translated expression is embedded into a predefined Python script template, which includes solver logic for evaluating and finding roots of equations. Finally, the generated Python script is written to a file, making it ready for execution and capable of handling both real and complex roots efficiently.
 ## Sample
 
 #### Example 1
