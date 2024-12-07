@@ -5,12 +5,25 @@ This repository contains the code for the COMS 4115 PLT Project, which implement
 
 #### Team members: Caiwu Chen(cc4786), Khaliun Gerel(kg3159)
 
-#### Current Stage: Parser
+#### Current Stage: Code generation
 The README will be updated to reflect the project's progress as it evolves.
 
 #### Demo video: https://vimeo.com/1027472571
 
-## Context-Free Grammar
+## Environment
+This project is developed using Python. Run the associated shell scripts on a Linux/Unix operating system.
+
+### Testing Environment
+You can use Git bash to test or use Ubuntu and any compatible Linux system to run bash. <br />
+
+### How to Run
+To execute the lexer, navigate to the root directory of the project and run the following command:
+```bash
+pip install -r requirements.txt
+./calculator.sh
+```
+
+## Context Free Grammar
 ### Grammar with Ambiguity
 ```bash
 Expression -> Term = Term
@@ -38,198 +51,114 @@ Terminals: =, +, -, *, /, %, ^, (, ), int, id, decimal
 Non-terminals: Expression, Term, Term', Subterm, Subterm', Factor, Val
 ```
 
-## Environment
-This project is developed using Python. Run the associated shell scripts on a Linux/Unix operating system.
-
-### Testing Environment
-You can use Git bash to test or use Ubuntu and any compatible Linux system to run bash. <br />
-
-### How to Run
-To execute the lexer, navigate to the root directory of the project and run the following command:
-```bash
-$ ./lexer.sh
-```
-
 ## Lexical grammar
 While we anticipate that users will provide valid equations, the calculator includes error handling for invalid symbols or operations. It also checks for correct use of parentheses.
+
 #### Below are the defined tokens along with their corresponding rules:
 1. INTEGER: ```[0-9]*```
 2. DECIMAL: ```[0-9]*.[0-9]*```
 3. IDENTIFIER: ```[a-zA-Z][a-zA-Z0-9]*```
 4. OPERATORS: ``` + | - | * | / | ^ | % | = | ==```
-   - PLUS: ```+```
-   - MINUS: ```-```
-   - MULTIPLY: ```*```
-   - DIVIDE: ```/```
-   - POWER: ```^```
-   - MODULE: ```%```
-   - EQUAL: ```=```
-   - COMPARE: ```==```
+   - PLUS: ```+```, MINUS: ```-```, MULTIPLY: ```*```, DIVIDE: ```/```, POWER: ```^```, MODULE: ```%```, EQUAL: ```=```, COMPARE: ```==```
 5. LPAREN: ```(```
 6. RPAREN: ```)```
 7. WHITESPACE: ``` ```
 
-## Sample Input Strings:
+## Code Generation
+
+The code generation phase processes the Abstract Syntax Tree (AST) to interpret the input program and generate executable Python code. It converts high-level expressions into Python functions to solve polynomial equations using Muller's method and polynomial deflation. This phase also detects errors, such as syntax or semantic issues, and logs clear messages about where they occurred, ensuring accurate and reliable program execution.
+
+## Sample:
 
 #### Example 1
-Input: ```4*x^3 +2.3*y^2 -45=hello``` <br />
-Output: 
+Input: ```x^2 - 4 = 0``` <br />
+Tokens: 
 ```
-('INTEGER', '4')
-('MULTIPLY', '*')
-('IDENTIFIER', 'x')
-('POWER', '^')
-('INTEGER', '3')
-('PLUS', '+')
-('DECIMAL', '2.3')
-('MULTIPLY', '*')
-('IDENTIFIER', 'y')
-('POWER', '^')
-('INTEGER', '2')
-('MINUS', '-')
-('INTEGER', '45')
-('EQUAL', '=')
-('IDENTIFIER', 'hello')
+[["IDENTIFIER", "x"], ["POWER", "^"], ["INTEGER", "2"], ["MINUS", "-"], ["INTEGER", "4"], ["EQUAL", "="], ["INTEGER", "0"]]
 ```
-#### Example 2
-Input: ```34^(x*26%y) + (hello +1 ) ^1=6+if*2``` <br />
-Output: 
-```
-('INTEGER', '34')
-('POWER', '^')
-('LPAREN', '(')
-('IDENTIFIER', 'x')
-('MULTIPLY', '*')
-('INTEGER', '26')
-('MODULE', '%')
-('IDENTIFIER', 'y')
-('RPAREN', ')')
-('PLUS', '+')
-('LPAREN', '(')
-('IDENTIFIER', 'hello')
-('PLUS', '+')
-('INTEGER', '1')
-('RPAREN', ')')
-('POWER', '^')
-('INTEGER', '1')
-('EQUAL', '=')
-('INTEGER', '6')
-('PLUS', '+')
-('IDENTIFIER', 'if')
-('MULTIPLY', '*')
-('INTEGER', '2')
-```
-#### Example 3 
-Input: ```(x+1=4``` <br />
-Output: 
-```
-('LPAREN', '(')
-('IDENTIFIER', 'x')
-('PLUS', '+')
-('INTEGER', '1')
-('EQUAL', '=')
-('INTEGER', '4')
-```
-#### Example 4 
-Input: ```3^2 + $ =1``` <br />
-Output: 
-```Error: '$' is not recognizable.```
-#### Example 5 
-Input: ```3++3x^2%y-1=0``` <br />
-Output: 
-```Error: '++' is not a valid operator```
-
-## Sample Input Programs (AST):
-
-#### Example 1
-Input: ```4*x^3 +2.3*y^2 -45=hello``` <br />
-AST: 
+AST:
 ```
 EQUAL
 ├── MINUS
-    ├── PLUS
-        ├── MULTIPLY
-            ├── VAL (4)
-            └── POWER
-                ├── VAL (x)
-                └── VAL (3)
-        └── MULTIPLY
-            ├── VAL (2.3)
-            └── POWER
-                ├── VAL (y)
-                └── VAL (2)
-    └── VAL (45)
-└── VAL (hello)
+    ├── POWER
+        ├── ID (x)
+        └── VAL (2)
+    └── VAL (4)
+└── VAL (0)
 ```
+Solver: 
+```
+Solutions:
+Real Roots: [np.float64(-2.0), np.float64(2.0)]
+Complex Roots: []
+```
+
 #### Example 2
-Input: ```34^(x*26%y) + (hello +1 ) ^1=6+if*2``` <br />
+Input: ```x^2+(10*x+25)=0``` <br />
+Tokens: 
+```
+[["IDENTIFIER", "x"], ["POWER", "^"], ["INTEGER", "2"], ["PLUS", "+"], ["LPAREN", "("], ["INTEGER", "10"], ["MULTIPLY", "*"], ["IDENTIFIER", "x"], ["PLUS", "+"], ["INTEGER", "25"], ["RPAREN", ")"], ["EQUAL", "="], ["INTEGER", "0"]]
+```
 AST:
 ```
 EQUAL
 ├── PLUS
     ├── POWER
-        ├── VAL (34)
-        └── MODULE
-            ├── MULTIPLY
-                ├── VAL (x)
-                └── VAL (26)
-            └── VAL (y)
-    └── POWER
-        ├── PLUS
-            ├── VAL (hello)
-            └── VAL (1)
-        └── VAL (1)
-└── PLUS
-    ├── VAL (6)
-    └── MULTIPLY
-        ├── VAL (if)
+        ├── ID (x)
         └── VAL (2)
-```
-#### Example 3
-Input: ```x+10^2.2``` <br />
-AST: 
-```
-Error parsing tokens: Not an equation.
-```
-### Example 4
-Input: ```2*10=y-1^3``` <br />
-AST:
-```
-EQUAL
-├── MULTIPLY
-    ├── VAL (2)
-    └── VAL (10)
-└── MINUS
-    ├── VAL (y)
-    └── POWER
-        ├── VAL (1)
-        └── VAL (3)
-```
-
-### Example 5
-Input: ```(2+3)*(4+x)=(10*(4%y)+8)``` <br />
-AST:
-```
-EQUAL
-├── MULTIPLY
-    ├── PLUS
-        ├── VAL (2)
-        └── VAL (3)
     └── PLUS
-        ├── VAL (4)
-        └── VAL (x)
-└── PLUS
-    ├── MULTIPLY
-        ├── VAL (10)
-        └── MODULE
-            ├── VAL (4)
-            └── VAL (y)
-    └── VAL (8)
+        ├── MULTIPLY
+            ├── VAL (10)
+            └── ID (x)
+        └── VAL (25)
+└── VAL (0)
+```
+Solver: 
+```
+Solutions:
+Real Roots: [np.float64(-5.0)]
+Complex Roots: []
 ```
 
-### Example 6
-Input: ```(x+y+z^(x+1)=1``` <br />
-AST: 
+#### Example 3
+Input: ```2*x-6=0``` <br />
+Tokens: 
 ```
-SyntaxError: Expected ')'
+[["INTEGER", "2"], ["MULTIPLY", "*"], ["IDENTIFIER", "x"], ["MINUS", "-"], ["INTEGER", "6"], ["EQUAL", "="], ["INTEGER", "0"]]
 ```
+AST:
+```
+EQUAL
+├── MINUS
+    ├── MULTIPLY
+        ├── VAL (2)
+        └── ID (x)
+    └── VAL (6)
+└── VAL (0)
+```
+Solver: 
+```
+Solutions:
+Real Roots: [np.float64(3.0)]
+Complex Roots: []
+```
+
+#### Example 4
+Input: ```x^2 + = 4``` <br />
+Tokens: 
+```
+[["IDENTIFIER", "x"], ["POWER", "^"], ["INTEGER", "2"], ["PLUS", "+"], ["EQUAL", "="], ["INTEGER", "4"]]
+```
+AST:
+```
+Syntax error while parsing: Unexpected token: =
+```
+
+
+#### Example 5
+Input: ```x^2 %% 4 = 0``` <br />
+Tokens: 
+```
+Error: '%%' is not a valid operator
+```
+
