@@ -5,12 +5,25 @@ This repository contains the code for the COMS 4115 PLT Project, which implement
 
 #### Team members: Caiwu Chen(cc4786), Khaliun Gerel(kg3159)
 
-#### Current Stage: Parser
+#### Current Stage: Code generation
 The README will be updated to reflect the project's progress as it evolves.
 
 #### Demo video: https://vimeo.com/1027472571
 
-## Context-Free Grammar
+## Environment
+This project is developed using Python. Run the associated shell scripts on a Linux/Unix operating system.
+
+### Testing Environment
+You can use Git bash to test or use Ubuntu and any compatible Linux system to run bash. <br />
+
+### How to Run
+To execute the lexer, navigate to the root directory of the project and run the following command:
+```bash
+pip install -r requirements.txt
+./calculator.sh
+```
+
+## Context Free Grammar
 ### Grammar with Ambiguity
 ```bash
 Expression -> Term = Term
@@ -38,198 +51,158 @@ Terminals: =, +, -, *, /, %, ^, (, ), int, id, decimal
 Non-terminals: Expression, Term, Term', Subterm, Subterm', Factor, Val
 ```
 
-## Environment
-This project is developed using Python. Run the associated shell scripts on a Linux/Unix operating system.
-
-### Testing Environment
-You can use Git bash to test or use Ubuntu and any compatible Linux system to run bash. <br />
-
-### How to Run
-To execute the lexer, navigate to the root directory of the project and run the following command:
-```bash
-$ ./lexer.sh
-```
-
 ## Lexical grammar
 While we anticipate that users will provide valid equations, the calculator includes error handling for invalid symbols or operations. It also checks for correct use of parentheses.
+
 #### Below are the defined tokens along with their corresponding rules:
 1. INTEGER: ```[0-9]*```
 2. DECIMAL: ```[0-9]*.[0-9]*```
 3. IDENTIFIER: ```[a-zA-Z][a-zA-Z0-9]*```
 4. OPERATORS: ``` + | - | * | / | ^ | % | = | ==```
-   - PLUS: ```+```
-   - MINUS: ```-```
-   - MULTIPLY: ```*```
-   - DIVIDE: ```/```
-   - POWER: ```^```
-   - MODULE: ```%```
-   - EQUAL: ```=```
-   - COMPARE: ```==```
+   - PLUS: ```+```, MINUS: ```-```, MULTIPLY: ```*```, DIVIDE: ```/```, POWER: ```^```, MODULE: ```%```, EQUAL: ```=```, COMPARE: ```==```
 5. LPAREN: ```(```
 6. RPAREN: ```)```
 7. WHITESPACE: ``` ```
 
-## Sample Input Strings:
+## Code Generation
+
+The Code Generation Phase transforms Abstract Syntax Trees (ASTs) into executable Python code. First, the input expression or AST is parsed and converted into valid Python syntax, supporting basic mathematical operations like addition, subtraction, multiplication, and more. Next, the translated expression is embedded into a predefined Python script template, which includes solver logic for evaluating and finding roots of equations. Finally, the generated Python script is written to a file, making it ready for execution and capable of handling both real and complex roots efficiently.
+## Sample
 
 #### Example 1
-Input: ```4*x^3 +2.3*y^2 -45=hello``` <br />
+Input: ```x^2 - 4 = 0``` <br />
 Output: 
 ```
-('INTEGER', '4')
-('MULTIPLY', '*')
-('IDENTIFIER', 'x')
-('POWER', '^')
-('INTEGER', '3')
-('PLUS', '+')
-('DECIMAL', '2.3')
-('MULTIPLY', '*')
-('IDENTIFIER', 'y')
-('POWER', '^')
-('INTEGER', '2')
-('MINUS', '-')
-('INTEGER', '45')
-('EQUAL', '=')
-('IDENTIFIER', 'hello')
+Tokens: [["IDENTIFIER", "x"], ["POWER", "^"], ["INTEGER", "2"], ["MINUS", "-"], ["INTEGER", "4"], ["EQUAL", "="], ["INTEGER", "0"]]
+
+AST Tree Representation:
+EQUAL
+├── MINUS
+    ├── POWER
+        ├── ID (x)
+        └── VAL (2)
+    └── VAL (4)
+└── VAL (0)
+
+Serialized AST for Solver:
+{"type": "EQUAL", "value": null, "children": [{"type": "MINUS", "value": null, "children": [{"type": "POWER", "value": null, "children": [{"type": "ID", "value": "x", "children": []}, {"type": "VAL", "value": "2", "children": []}]}, {"type": "VAL", "value": "4", "children": []}]}, {"type": "VAL", "value": "0", "children": []}]}
+
+Solver Output: Generated Python Code:
+
+from solver import solve_equation
+
+if __name__ == "__main__":
+    python_expression = "(((x ** 2) - 4) - 0)"
+    real_roots, complex_roots = solve_equation(python_expression)
+
+    print("Solutions:")
+    print(f"Real Roots: {real_roots}")
+    print(f"Complex Roots: {complex_roots}")
+            
+Execution Output:
+Stopping root finding: Muller's method did not converge.
+Solutions:
+Real Roots: [np.float64(-2.0), np.float64(2.0)]
+Complex Roots: []
 ```
+
 #### Example 2
-Input: ```34^(x*26%y) + (hello +1 ) ^1=6+if*2``` <br />
+Input: ```x^2-6*x^2+11*x-6=0``` <br />
 Output: 
 ```
-('INTEGER', '34')
-('POWER', '^')
-('LPAREN', '(')
-('IDENTIFIER', 'x')
-('MULTIPLY', '*')
-('INTEGER', '26')
-('MODULE', '%')
-('IDENTIFIER', 'y')
-('RPAREN', ')')
-('PLUS', '+')
-('LPAREN', '(')
-('IDENTIFIER', 'hello')
-('PLUS', '+')
-('INTEGER', '1')
-('RPAREN', ')')
-('POWER', '^')
-('INTEGER', '1')
-('EQUAL', '=')
-('INTEGER', '6')
-('PLUS', '+')
-('IDENTIFIER', 'if')
-('MULTIPLY', '*')
-('INTEGER', '2')
-```
-#### Example 3 
-Input: ```(x+1=4``` <br />
-Output: 
-```
-('LPAREN', '(')
-('IDENTIFIER', 'x')
-('PLUS', '+')
-('INTEGER', '1')
-('EQUAL', '=')
-('INTEGER', '4')
-```
-#### Example 4 
-Input: ```3^2 + $ =1``` <br />
-Output: 
-```Error: '$' is not recognizable.```
-#### Example 5 
-Input: ```3++3x^2%y-1=0``` <br />
-Output: 
-```Error: '++' is not a valid operator```
+Tokens: [["IDENTIFIER", "x"], ["POWER", "^"], ["INTEGER", "2"], ["MINUS", "-"], ["INTEGER", "6"], ["MULTIPLY", "*"], ["IDENTIFIER", "x"], ["POWER", "^"], ["INTEGER", "2"], ["PLUS", "+"], ["INTEGER", "11"], ["MULTIPLY", "*"], ["IDENTIFIER", "x"], ["MINUS", "-"], ["INTEGER", "6"], ["EQUAL", "="], ["INTEGER", "0"]]
 
-## Sample Input Programs (AST):
-
-#### Example 1
-Input: ```4*x^3 +2.3*y^2 -45=hello``` <br />
-AST: 
-```
+AST Tree Representation:
 EQUAL
 ├── MINUS
     ├── PLUS
-        ├── MULTIPLY
-            ├── VAL (4)
-            └── POWER
-                ├── VAL (x)
-                └── VAL (3)
-        └── MULTIPLY
-            ├── VAL (2.3)
-            └── POWER
-                ├── VAL (y)
+        ├── MINUS
+            ├── POWER
+                ├── ID (x)
                 └── VAL (2)
-    └── VAL (45)
-└── VAL (hello)
+            └── MULTIPLY
+                ├── VAL (6)
+                └── POWER
+                    ├── ID (x)
+                    └── VAL (2)
+        └── MULTIPLY
+            ├── VAL (11)
+            └── ID (x)
+    └── VAL (6)
+└── VAL (0)
+
+Serialized AST for Solver:
+{"type": "EQUAL", "value": null, "children": [{"type": "MINUS", "value": null, "children": [{"type": "PLUS", "value": null, "children": [{"type": "MINUS", "value": null, "children": [{"type": "POWER", "value": null, "children": [{"type": "ID", "value": "x", "children": []}, {"type": "VAL", "value": "2", "children": []}]}, {"type": "MULTIPLY", "value": null, "children": [{"type": "VAL", "value": "6", "children": []}, {"type": "POWER", "value": null, "children": [{"type": "ID", "value": "x", "children": []}, {"type": "VAL", "value": "2", "children": []}]}]}]}, {"type": "MULTIPLY", "value": null, "children": [{"type": "VAL", "value": "11", "children": []}, {"type": "ID", "value": "x", "children": []}]}]}, {"type": "VAL", "value": "6", "children": []}]}, {"type": "VAL", "value": "0", "children": []}]}
+
+Solver Output: Generated Python Code:
+
+from solver import solve_equation
+
+if __name__ == "__main__":
+    python_expression = "(((((x ** 2) - (6 * (x ** 2))) + (11 * x)) - 6) - 0)"
+    real_roots, complex_roots = solve_equation(python_expression)
+
+    print("Solutions:")
+    print(f"Real Roots: {real_roots}")
+    print(f"Complex Roots: {complex_roots}")
+            
+Execution Output:
+Solutions:
+Real Roots: [np.float64(1.0)]
+Complex Roots: []
 ```
-#### Example 2
-Input: ```34^(x*26%y) + (hello +1 ) ^1=6+if*2``` <br />
-AST:
-```
-EQUAL
-├── PLUS
-    ├── POWER
-        ├── VAL (34)
-        └── MODULE
-            ├── MULTIPLY
-                ├── VAL (x)
-                └── VAL (26)
-            └── VAL (y)
-    └── POWER
-        ├── PLUS
-            ├── VAL (hello)
-            └── VAL (1)
-        └── VAL (1)
-└── PLUS
-    ├── VAL (6)
-    └── MULTIPLY
-        ├── VAL (if)
-        └── VAL (2)
-```
+
 #### Example 3
-Input: ```x+10^2.2``` <br />
-AST: 
+Input: ```2*x-6=0``` <br />
+Output: 
 ```
-Error parsing tokens: Not an equation.
-```
-### Example 4
-Input: ```2*10=y-1^3``` <br />
-AST:
-```
-EQUAL
-├── MULTIPLY
-    ├── VAL (2)
-    └── VAL (10)
-└── MINUS
-    ├── VAL (y)
-    └── POWER
-        ├── VAL (1)
-        └── VAL (3)
-```
+Tokens: [["INTEGER", "2"], ["MULTIPLY", "*"], ["IDENTIFIER", "x"], ["MINUS", "-"], ["INTEGER", "6"], ["EQUAL", "="], ["INTEGER", "0"]]
 
-### Example 5
-Input: ```(2+3)*(4+x)=(10*(4%y)+8)``` <br />
-AST:
-```
+AST Tree Representation:
 EQUAL
-├── MULTIPLY
-    ├── PLUS
-        ├── VAL (2)
-        └── VAL (3)
-    └── PLUS
-        ├── VAL (4)
-        └── VAL (x)
-└── PLUS
+├── MINUS
     ├── MULTIPLY
-        ├── VAL (10)
-        └── MODULE
-            ├── VAL (4)
-            └── VAL (y)
-    └── VAL (8)
+        ├── VAL (2)
+        └── ID (x)
+    └── VAL (6)
+└── VAL (0)
+
+Serialized AST for Solver:
+{"type": "EQUAL", "value": null, "children": [{"type": "MINUS", "value": null, "children": [{"type": "MULTIPLY", "value": null, "children": [{"type": "VAL", "value": "2", "children": []}, {"type": "ID", "value": "x", "children": []}]}, {"type": "VAL", "value": "6", "children": []}]}, {"type": "VAL", "value": "0", "children": []}]}
+
+Solver Output: Generated Python Code:
+
+from solver import solve_equation
+
+if __name__ == "__main__":
+    python_expression = "(((2 * x) - 6) - 0)"
+    real_roots, complex_roots = solve_equation(python_expression)
+
+    print("Solutions:")
+    print(f"Real Roots: {real_roots}")
+    print(f"Complex Roots: {complex_roots}")
+            
+Execution Output:
+Stopping root finding: Muller's method did not converge.
+Solutions:
+Real Roots: [np.float64(3.0)]
+Complex Roots: []
 ```
 
-### Example 6
-Input: ```(x+y+z^(x+1)=1``` <br />
-AST: 
+#### Example 4
+Input: ```x^2 + = 4``` <br />
+Output: 
 ```
-SyntaxError: Expected ')'
+Tokens: [["IDENTIFIER", "x"], ["POWER", "^"], ["INTEGER", "2"], ["PLUS", "+"], ["EQUAL", "="], ["INTEGER", "4"]]
+
+AST Tree Representation:
+Syntax error while parsing: Unexpected token: =
 ```
+
+#### Example 5
+Input: ```x^2 %% 4 = 0``` <br />
+Output: 
+```
+"Error: '%%' is not a valid operator"
+```
+

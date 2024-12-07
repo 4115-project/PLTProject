@@ -12,16 +12,15 @@ class ASTNode:
         self.children = children if children else []
 
     def __repr__(self, level=0, is_last=False):
-        prefix = "    " * (level - 1) + ("|-- " if not is_last else "`-- " if level > 0 else "")
+        prefix = "    " * (level - 1) + ("└── " if is_last else "├── " if level > 0 else "")
         ret = f"{prefix}{self.type}"
-        if self.value is not None:
+        if self.value:
             ret += f" ({self.value})"
         ret += "\n"
-
+        
         for i, child in enumerate(self.children):
             ret += child.__repr__(level + 1, is_last=(i == len(self.children) - 1))
         return ret
-
 
 
 class Parser:
@@ -135,8 +134,8 @@ def main():
     parser = Parser(tokens)
     try:
         ast = parser.parse_expression()
-    
-        #print(ast)
+        print(ast)
+        print("---")
         print(json.dumps(ast, default=lambda o: o.__dict__))
     except SyntaxError as e:
         print(f"Syntax error while parsing: {e}")
