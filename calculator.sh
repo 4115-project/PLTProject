@@ -21,19 +21,23 @@ while true; do
 
     ast_output=$(python3 AST.py "$tokens")
     
-    #tree_output=$(echo "$ast_output" | head -n 1)  # Capture the tree-like output (first line)
-    #json_output=$(echo "$ast_output" | tail -n 1)  # Capture the JSON output (second line)
-
     if [[ "$ast_output" =~ Error:* ]]; then
         echo "$ast_output"
         continue
     fi
 
+    tree_output=$(echo "$ast_output" | awk '/---/{exit} {print}')
+    json_output=$(echo "$ast_output" | awk '/---/{flag=1;next}flag')
+
     echo ""
-    echo "AST Output: $ast_output"
+    echo "AST Tree Representation:"
+    echo "$tree_output"
 
+    echo ""
+    echo "Serialized AST for Solver:"
+    echo "$json_output"
 
-    solver_output=$(python3 solver.py "$ast_output")
+    solver_output=$(python3 solver.py "$json_output")
 
     if [[ "$solver_output" =~ Error:* ]]; then
         echo "$solver_output"
