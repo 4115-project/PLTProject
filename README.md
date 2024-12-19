@@ -5,7 +5,7 @@ This repository contains the code for the COMS 4115 PLT Project, which implement
 
 #### Team members: Caiwu Chen(cc4786), Khaliun Gerel(kg3159)
 
-#### Current Stage: Code generation
+#### Current Stage: Optimization
 The README will be updated to reflect the project's progress as it evolves.
 
 #### Demo video: https://vimeo.com/1027472571
@@ -214,3 +214,83 @@ Output:
 "Error: '%%' is not a valid operator"
 ```
 
+
+## Optimization
+
+### Algebraic Simplification
+
+Input: ```(1 * x) + (x ^ 0) = 4```
+Output: 
+```
+Tokens: [["LPAREN", "("], ["INTEGER", "1"], ["MULTIPLY", "*"], ["IDENTIFIER", "x"], ["RPAREN", ")"], ["PLUS", "+"], ["LPAREN", "("], ["IDENTIFIER", "x"], ["POWER", "^"], ["INTEGER", "0"], ["RPAREN", ")"], ["EQUAL", "="], ["INTEGER", "4"]]
+
+AST Tree Representation:
+EQUAL
+├── PLUS
+    ├── MULTIPLY
+        ├── VAL (1)
+        └── ID (x)
+    └── POWER
+        ├── ID (x)
+        └── VAL (0)
+└── VAL (4)
+
+Solver Output: Generated Python Code:
+
+from solver import solve_equation
+
+if __name__ == "__main__":
+    python_expression = "((x + 1) - 4)"
+    real_roots, complex_roots = solve_equation(python_expression)
+
+    print("Solutions:")
+    print(f"Real Roots: {real_roots}")
+    print(f"Complex Roots: {complex_roots}")
+     
+Execution Output:
+Stopping root finding: Muller's method did not converge.
+Solutions:
+Real Roots: [np.float64(3.0)]
+Complex Roots: []
+```
+
+
+### Constant folding
+
+Input: ```1 ^ 4 + 4 - 2 + x = 9```
+Output: 
+```
+Tokens: [["INTEGER", "1"], ["POWER", "^"], ["INTEGER", "4"], ["PLUS", "+"], ["INTEGER", "4"], ["MINUS", "-"], ["INTEGER", "2"], ["PLUS", "+"], ["IDENTIFIER", "x"], ["EQUAL", "="], ["INTEGER", "9"]]
+
+AST Tree Representation:
+EQUAL
+├── PLUS
+    ├── MINUS
+        ├── PLUS
+            ├── POWER
+                ├── VAL (1)
+                └── VAL (4)
+            └── VAL (4)
+        └── VAL (2)
+    └── ID (x)
+└── VAL (9)
+
+Solver Output: Generated Python Code:
+
+from solver import solve_equation
+
+if __name__ == "__main__":
+    python_expression = "((3 + x) - 9)"
+    real_roots, complex_roots = solve_equation(python_expression)
+
+    print("Solutions:")
+    print(f"Real Roots: {real_roots}")
+    print(f"Complex Roots: {complex_roots}")
+
+    
+Execution Output:
+Stopping root finding: Muller's method did not converge.
+Solutions:
+Real Roots: [np.float64(6.0)]
+Complex Roots: []
+```
