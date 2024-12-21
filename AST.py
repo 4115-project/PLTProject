@@ -111,6 +111,15 @@ class Parser:
             return ASTNode('ID', value=token[1])
 
         raise SyntaxError("Unexpected token: " + str(token[1]))
+    
+    
+    def parse_multiple_expressions(self):
+        """Parses multiple expressions separated by whitespace."""
+        asts = []
+        while self.current_token_index < len(self.tokens):
+            ast = self.parse_expression()
+            asts.append(ast)
+        return asts
 
 
 def main():
@@ -122,8 +131,8 @@ def main():
             tokens = json.loads(token_string)
             if not isinstance(tokens, list):
                 raise ValueError("Tokens must be in a list format.")
-            if sum(1 for token in tokens if token[0] == Tokens.EQUAL.value) != 1:
-                raise ValueError("Not an equation.")
+            # if sum(1 for token in tokens if token[0] == Tokens.EQUAL.value) != 1:
+            #     raise ValueError("Not an equation.")
         except (json.JSONDecodeError, ValueError) as e:
             print(f"Error parsing tokens: {e}")
             sys.exit(1)
@@ -133,10 +142,24 @@ def main():
 
     parser = Parser(tokens)
     try:
-        ast = parser.parse_expression()
-        print(ast)
+        asts = parser.parse_multiple_expressions()
+        combined_tree_representation = ""
+        serialized_ast_list = "["
+        
+        for i, ast in enumerate(asts):
+            combined_tree_representation += f"AST {i + 1}:\n"
+            combined_tree_representation += f"{ast}\n"
+            serialized_ast_list += json.dumps(ast, default=lambda o: o.__dict__)
+            if i < len(asts) - 1: 
+                serialized_ast_list += ","
+            
+        print("Combined AST Tree Representation:")
+        print(combined_tree_representation.strip()) 
+        
         print("---")
-        print(json.dumps(ast, default=lambda o: o.__dict__))
+
+        print(serialized_ast_list + "]")
+        
     except SyntaxError as e:
         print(f"Syntax error while parsing: {e}")
         sys.exit(1)

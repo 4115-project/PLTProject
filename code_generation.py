@@ -2,6 +2,7 @@ import json
 import sys
 import subprocess
 import os
+from optimization import constant_folding_and_simplification
 
 def write_generated_code(generated_code, file_name="generated_script.py"):
     with open(file_name, "w") as f:
@@ -22,87 +23,6 @@ def execute_generated_code(file_name="generated_script.py"):
 def cleanup_generated_file(file_name="generated_script.py"):
     if os.path.exists(file_name):
         os.remove(file_name)
-
-def optimize_ast(node):
-    if not node or not isinstance(node, dict):
-        return node
-
-    node_type = node.get("type")
-    children = node.get("children", [])
-
-    # Recursively optimize children
-    optimized_children = [optimize_ast(child) for child in children]
-    node["children"] = optimized_children
-
-    if node_type == "PLUS":
-        if optimized_children[0]["type"] == "VAL" and optimized_children[0]["value"] == "0":
-            return optimized_children[1]  # 0 + x -> x
-        if optimized_children[1]["type"] == "VAL" and optimized_children[1]["value"] == "0":
-            return optimized_children[0]  # x + 0 -> x
-        if optimized_children[0]["type"] == "VAL" and optimized_children[1]["type"] == "VAL":
-            left = int(optimized_children[0]["value"])
-            right = int(optimized_children[1]["value"])
-            return {"type": "VAL", "value": str(left + right), "children": []}
-
-    elif node_type == "MULTIPLY":
-        if optimized_children[0]["type"] == "VAL" and optimized_children[0]["value"] == "1":
-            return optimized_children[1]  # 1 * x -> x
-        if optimized_children[1]["type"] == "VAL" and optimized_children[1]["value"] == "1":
-            return optimized_children[0]  # x * 1 -> x
-        if optimized_children[0]["type"] == "VAL" and optimized_children[0]["value"] == "0":
-            return {"type": "VAL", "value": "0", "children": []}  # x * 0 -> 0
-        if optimized_children[1]["type"] == "VAL" and optimized_children[1]["value"] == "0":
-            return {"type": "VAL", "value": "0", "children": []}  # 0 * x -> 0
-        if optimized_children[0]["type"] == "VAL" and optimized_children[1]["type"] == "VAL":
-            left = int(optimized_children[0]["value"])
-            right = int(optimized_children[1]["value"])
-            return {"type": "VAL", "value": str(left * right), "children": []}
-
-    elif node_type == "MINUS":
-        if optimized_children[1]["type"] == "VAL" and optimized_children[1]["value"] == "0":
-            return optimized_children[0]  # x - 0 -> x
-        if optimized_children[0]["type"] == "VAL" and optimized_children[1]["type"] == "VAL":
-            left = int(optimized_children[0]["value"])
-            right = int(optimized_children[1]["value"])
-            return {"type": "VAL", "value": str(left - right), "children": []}
-    
-    elif node_type == "POWER":
-        if optimized_children[0]["type"] == "VAL" and optimized_children[0]["value"] == "1":
-            return {"type": "VAL", "value": "1", "children": []}  # 1 ^ x -> 1
-        if optimized_children[1]["type"] == "VAL" and optimized_children[1]["value"] == "1":
-            return optimized_children[1]  # x ^ 1 -> x
-        if optimized_children[0]["type"] == "VAL" and optimized_children[0]["value"] == "0":
-            return {"type": "VAL", "value": "0", "children": []}  # 0 ^ x -> 0
-        if optimized_children[1]["type"] == "VAL" and optimized_children[1]["value"] == "0":
-            return {"type": "VAL", "value": "1", "children": []}  # x ^ 0 -> 1
-        if optimized_children[0]["type"] == "VAL" and optimized_children[1]["type"] == "VAL":
-            left = int(optimized_children[0]["value"])
-            right = int(optimized_children[1]["value"])
-            return {"type": "VAL", "value": str(left ** right), "children": []}
-
-    elif node_type == "DIVIDE":
-        if optimized_children[1]["type"] == "VAL" and optimized_children[1]["value"] == "1":
-            return optimized_children[0]  # x / 1 -> x
-        if optimized_children[0]["type"] == "VAL" and optimized_children[1]["type"] == "VAL":
-            left = int(optimized_children[0]["value"])
-            right = int(optimized_children[1]["value"])
-            return {"type": "VAL", "value": str(left // right), "children": []}  
-
-    elif node_type == "MODULO":
-        if optimized_children[1]["type"] == "VAL" and optimized_children[1]["value"] == "1":
-            return {"type": "VAL", "value": "0", "children": []} 
-        if optimized_children[0]["type"] == "VAL" and optimized_children[1]["type"] == "VAL":
-            left = int(optimized_children[0]["value"])
-            right = int(optimized_children[1]["value"])
-            return {"type": "VAL", "value": str(left % right), "children": []}
-    
-    elif node_type == "EQUAL":
-        return {"type": "EQUAL", "children": optimized_children}
-
-    elif node_type == "VAL":
-        return node
-    
-    return node
 
 def generate_code_from_ast(node):
     node_type = node.get("type")
@@ -134,32 +54,36 @@ def generate_code_from_ast(node):
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         try:
-            ast = json.loads(sys.argv[1])
-            optimized = optimize_ast(ast)
-            python_expression = generate_code_from_ast(optimized)
+            ast_array = json.loads(sys.argv[1])
+            if not isinstance(ast_array, list):
+                raise ValueError("Expected an array of ASTs.")
+        
+            all_generated_code = []
+            for i, ast in enumerate(ast_array):
+                print(ast)
+                optimized = constant_folding_and_simplification(ast)
+                python_expression = generate_code_from_ast(optimized)
 
-            generated_code = f"""
+                generated_code = f"""
 from solver import solve_equation
 
 if __name__ == "__main__":
     python_expression = "{python_expression}"
-    real_roots, complex_roots = solve_equation(python_expression)
+    result = solve_equation(python_expression)
 
-    print("Solutions:")
-    print(f"Real Roots: {{real_roots}}")
-    print(f"Complex Roots: {{complex_roots}}")
-            """
+    print(f"Solution: {{result}}")
+                """
 
-            print("Generated Python Code:")
-            print(generated_code)
-            
-            file_name = "generated_script.py"
-            write_generated_code(generated_code, file_name)
+                print("Generated Python Code:")
+                print(generated_code)
+                
+                file_name = "generated_script.py"
+                write_generated_code(generated_code, file_name)
 
-            output = execute_generated_code(file_name)
-            cleanup_generated_file(file_name)
-            print("Execution Output:")
-            print(output)
+                output = execute_generated_code(file_name)
+                cleanup_generated_file(file_name)
+                print("Execution Output:")
+                print(output)
 
         except Exception as e:
             print(f"Error generating code: {e}")

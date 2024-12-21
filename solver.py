@@ -64,4 +64,4 @@ def solve_equation(python_expression):
         [r for r in all_roots if abs(r.imag) >= 1e-6], key=lambda z: (z.real, z.imag)
     )
 
-    return real_roots, complex_roots
+    return real_roots[0] if len(real_roots) > 0 else 0
