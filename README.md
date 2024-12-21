@@ -217,10 +217,8 @@ Output:
 
 ## Optimization
 
-### Algebraic Simplification
-
-Input: ```(1 * x) + (x ^ 0) = 4```
-Output: 
+Input: ```(1 * x) + (x ^ 0) = 4``` <br />
+Output: ```((x + 1) - 4)``` <br />
 ```
 Tokens: [["LPAREN", "("], ["INTEGER", "1"], ["MULTIPLY", "*"], ["IDENTIFIER", "x"], ["RPAREN", ")"], ["PLUS", "+"], ["LPAREN", "("], ["IDENTIFIER", "x"], ["POWER", "^"], ["INTEGER", "0"], ["RPAREN", ")"], ["EQUAL", "="], ["INTEGER", "4"]]
 
@@ -254,11 +252,8 @@ Real Roots: [np.float64(3.0)]
 Complex Roots: []
 ```
 
-
-### Constant folding
-
-Input: ```1 ^ 4 + 4 - 2 + x = 9```
-Output: 
+Input: ```1 ^ 4 + 4 - 2 + x = 9``` <br />
+Output: ```((3 + x) - 9)``` <br />
 ```
 Tokens: [["INTEGER", "1"], ["POWER", "^"], ["INTEGER", "4"], ["PLUS", "+"], ["INTEGER", "4"], ["MINUS", "-"], ["INTEGER", "2"], ["PLUS", "+"], ["IDENTIFIER", "x"], ["EQUAL", "="], ["INTEGER", "9"]]
 
@@ -292,5 +287,40 @@ Execution Output:
 Stopping root finding: Muller's method did not converge.
 Solutions:
 Real Roots: [np.float64(6.0)]
+Complex Roots: []
+```
+
+Input: ```2 + x + y * 0 = 0```<br />
+Output: ```((2 + x) - 0)```<br />
+```
+Tokens: [["INTEGER", "2"], ["PLUS", "+"], ["IDENTIFIER", "x"], ["PLUS", "+"], ["IDENTIFIER", "y"], ["MULTIPLY", "*"], ["INTEGER", "0"], ["EQUAL", "="], ["INTEGER", "0"]]
+
+AST Tree Representation:
+EQUAL
+├── PLUS
+    ├── PLUS
+        ├── VAL (2)
+        └── ID (x)
+    └── MULTIPLY
+        ├── ID (y)
+        └── VAL (0)
+└── VAL (0)
+
+Solver Output: Generated Python Code:
+
+from solver import solve_equation
+
+if __name__ == "__main__":
+    python_expression = "((2 + x) - 0)"
+    real_roots, complex_roots = solve_equation(python_expression)
+
+    print("Solutions:")
+    print(f"Real Roots: {real_roots}")
+    print(f"Complex Roots: {complex_roots}")
+            
+Execution Output:
+Stopping root finding: Muller's method did not converge.
+Solutions:
+Real Roots: [np.float64(-2.0)]
 Complex Roots: []
 ```
